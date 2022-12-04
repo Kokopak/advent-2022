@@ -26,8 +26,8 @@ rps_score_p2 = {
 }
 
 with open("input.txt") as f:
-    for l in f.readlines():
-        rps_round = tuple(l.strip().split(" "))
+    for l in f.read().splitlines():
+        rps_round = tuple(l.split(" "))
 
         total_score += rps_score[rps_round]
         total_score_p2 += rps_score_p2[rps_round]

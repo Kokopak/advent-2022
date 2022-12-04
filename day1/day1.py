@@ -2,7 +2,7 @@ with open("input.txt") as f:
     calories = {}
     cur_elf = 0
 
-    for l in f.readlines():
+    for l in f.read().splitlines():
         l = l.strip()
 
         if l != "":
