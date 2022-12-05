@@ -14,7 +14,7 @@ with open("input.txt") as f:
         ):
             n_overlap += 1
 
-        if len(set(range(s1_min, s1_max + 1)) & set(range(s2_min, s2_max + 1))):
+        if not (s1_max < s2_min or s2_max < s1_min):
             n_overlap_p2 += 1
 
 
