@@ -1,5 +1,3 @@
-from itertools import takewhile
-
 import numpy as np
 
 forest = np.genfromtxt("input.txt", delimiter=1, dtype=int)
