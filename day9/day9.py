@@ -17,63 +17,37 @@ def move_knot(from_knot, to_knot):
     step_row = 0
     step_col = 0
 
-    if (from_row - to_row, from_col - to_col) in [
-        (-1, -1),
-        (1, 1),
-        (-1, 1),
-        (1, -1),
-        (1, 0),
-        (0, 1),
-        (-1, 0),
-        (0, -1),
-        (0, 0),
-    ]:
+    diff_col = from_col - to_col
+    diff_row = from_row - to_row
+
+    if abs(diff_row) <= 1 and abs(diff_col) <= 1:
         return from_knot
 
     if from_row == to_row:
-        if from_col - to_col == -2:
-            step_col = 1
-        elif from_col - to_col == 2:
-            step_col = -1
+        step_col = 1 if diff_col == -2 else -1
     elif from_col == to_col:
-        if from_row - to_row == -2:
-            step_row = 1
-        elif from_row - to_row == 2:
-            step_row = -1
+        step_row = 1 if diff_row == -2 else -1
     else:
-        if from_row > to_row and from_col < to_col:
-            step_row = -1
-            step_col = 1
-        elif from_row > to_row and from_col > to_col:
-            step_row = -1
-            step_col = -1
-        elif from_row < to_row and from_col < to_col:
-            step_row = 1
-            step_col = 1
-        elif from_row < to_row and from_col > to_col:
-            step_row = 1
-            step_col = -1
+        step_row = 1 if diff_row < 0 else -1
+        step_col = 1 if diff_col < 0 else -1
 
-    from_knot[0] += step_row
-    from_knot[1] += step_col
-
-    return from_knot
+    return (from_knot[0] + step_row, from_knot[1] + step_col)
 
 
 def get_tail_moves(n):
-    knots = defaultdict(lambda: [15, 11])
+    knots = defaultdict(lambda: (0, 0))
     moves = set()
-    moves.add(tuple(knots[0]))
+    moves.add(knots[0])
 
     for m_pos, c in motions:
         for _ in range(c):
-            knots[0] = [knots[0][0] + m_pos[0], knots[0][1] + m_pos[1]]
+            knots[0] = (knots[0][0] + m_pos[0], knots[0][1] + m_pos[1])
 
             for i in range(1, n + 1):
-                m = move_knot(knots[i], knots[i - 1])
+                knots[i] = move_knot(knots[i], knots[i - 1])
 
                 if i == n:
-                    moves.add(tuple(m))
+                    moves.add(knots[i])
 
     return moves
 
