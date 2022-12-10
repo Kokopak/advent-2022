@@ -1,60 +1,40 @@
-from collections import deque
-
-instructions = deque()
-
 with open("input.txt") as f:
-    for l in f.read().splitlines():
-        inst = l.split(" ")
-        instructions.append(inst)
-
+    instructions = [l.split(" ") for l in f.read().splitlines()]
 
 cycles = []
-pixel_position = 0
 X = 1
-
-inst = instructions.popleft()
-next_inst = False
 
 p1 = 0
 p2 = ""
 
-nb_cycle = 0
+inst = instructions.pop(0)
 
-while True:
+next_inst = False
+cycle_count = 0
+
+while len(instructions) > 0:
+    pixel_position = len(cycles)
+
     if inst[0] == "noop":
-        if nb_cycle == 1:
-            nb_cycle = 0
+        if cycle_count == 1:
             next_inst = True
-
     elif inst[0] == "addx":
-        V = int(inst[1])
+        if cycle_count == 2:
+            X += int(inst[1])
 
-        if nb_cycle == 2:
-            X += V
-
-            nb_cycle = 0
             next_inst = True
 
-    cycles.append(X)
-
-    if pixel_position in (X - 1, X, X + 1):
-        p2 += "#"
-    else:
-        p2 += "."
-
-    nb_cycle += 1
-    pixel_position += 1
-
-    if pixel_position == 40:
-        p2 += "\n"
-        pixel_position = 0
+    p2 += "#" if pixel_position % 40 in (X - 1, X, X + 1) else " "
+    p2 += "\n" if pixel_position % 40 == 39 else ""
 
     if next_inst:
-        if len(instructions):
-            inst = instructions.popleft()
-        else:
-            break
+        inst = instructions.pop(0)
+
         next_inst = False
+        cycle_count = 0
+
+    cycle_count += 1
+    cycles.append(X)
 
 for i in range(20, 221, 40):
     p1 += cycles[i - 1] * i
