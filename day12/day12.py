@@ -21,12 +21,17 @@ def bfs(graph, start, end):
     return float("infinity")
 
 
+def get_elevation(letter):
+    return ord("a") if letter == "S" else ord("z") if letter == "E" else ord(letter)
+
+
 graph = defaultdict(list)
 
 S = (0, 0)
 E = (0, 0)
 
 a_elevations = set()
+
 
 with open("input.txt") as f:
     grid = {}
@@ -45,28 +50,17 @@ with open("input.txt") as f:
             if grid[coord] in ("S", "a"):
                 a_elevations.add(coord)
 
+            if grid[coord] == "S":
+                S = coord
+            elif grid[coord] == "E":
+                E = coord
+
             for nr, nc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 if r + nr >= 0 and c + nc >= 0 and r + nr <= ROWS and c + nc <= COLS:
                     neighbor = (r + nr, c + nc)
 
-                    elevation_current = 0
-                    elevation_neighbor = 0
-
-                    if grid[coord] == "S":
-                        S = coord
-                        elevation_current = ord("a")
-                    elif grid[coord] == "E":
-                        E = coord
-                        elevation_current = ord("z")
-                    else:
-                        elevation_current = ord(grid[coord])
-
-                    if grid[neighbor] == "S":
-                        elevation_neighbor = ord("a")
-                    elif grid[neighbor] == "E":
-                        elevation_neighbor = ord("z")
-                    else:
-                        elevation_neighbor = ord(grid[neighbor])
+                    elevation_current = get_elevation(grid[coord])
+                    elevation_neighbor = get_elevation(grid[neighbor])
 
                     if (
                         elevation_neighbor <= elevation_current
