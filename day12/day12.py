@@ -1,30 +1,27 @@
-import heapq
-from collections import defaultdict
+from collections import defaultdict, deque
 
 
-def dijkstra(graph, starting_vertex):
-    distances = {vertex: float("infinity") for vertex in graph}
-    distances[starting_vertex] = 0
+def bfs(graph, start, end):
+    queue = deque([(0, start)])
 
-    pq = [(0, starting_vertex)]
+    explored = set()
+    explored.add(start)
 
-    while len(pq) > 0:
-        current_distance, current_vertex = heapq.heappop(pq)
+    while len(queue) > 0:
+        dist, current = queue.popleft()
 
-        if current_distance > distances[current_vertex]:
-            continue
+        if current == end:
+            return dist
 
-        for neighbor, weight in graph[current_vertex].items():
-            distance = current_distance + weight
+        for neighbor in graph[current]:
+            if neighbor not in explored:
+                explored.add(neighbor)
+                queue.append((dist + 1, neighbor))
 
-            if distance < distances[neighbor]:
-                distances[neighbor] = distance
-                heapq.heappush(pq, (distance, neighbor))
-
-    return distances
+    return float("infinity")
 
 
-graph = defaultdict(dict)
+graph = defaultdict(list)
 
 S = (0, 0)
 E = (0, 0)
@@ -75,15 +72,16 @@ with open("input.txt") as f:
                         elevation_neighbor <= elevation_current
                         or elevation_neighbor == elevation_current + 1
                     ):
-                        graph[coord][neighbor] = 1
+                        graph[coord].append(neighbor)
 
-p1 = dijkstra(graph, S)[E]
+
+p1 = bfs(graph, S, E)
 print(p1)
 
 p2 = float("infinity")
 
 for a in a_elevations:
-    min_dis = dijkstra(graph, a)[E]
+    min_dis = bfs(graph, a, E)
 
     if min_dis < p2:
         p2 = min_dis
