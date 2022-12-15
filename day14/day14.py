@@ -5,7 +5,7 @@ ROCK = 1
 SAND = 2
 ABYSS = -1
 
-cave = np.zeros((600, 600))
+cave = np.zeros((1000, 1000))
 
 abyss_row = 0
 
@@ -33,12 +33,15 @@ with open("input.txt") as f:
 
             abyss_row = max(y, y2) if max(y, y2) > abyss_row else abyss_row
 
-cave[abyss_row + 1, :] = ABYSS
+
+cave_p1 = cave.copy()
+cave_p2 = cave.copy()
+
+cave_p1[abyss_row + 1, :] = ABYSS
+cave_p2[abyss_row + 2, :] = ROCK
 
 
-def get_fall_coordinates(cave, r, c):
-    diag = -1
-
+def get_fall_coordinates(cave, r, c, abyss=True):
     origin_r, origin_c = r, c
 
     while not (
@@ -47,7 +50,7 @@ def get_fall_coordinates(cave, r, c):
         and cave[r + 1, c + 1] in (ROCK, SAND)
     ):
 
-        if np.any(cave[r, :] == ABYSS):
+        if abyss and np.any(cave[r, :] == ABYSS):
             return (origin_r, origin_c)
 
         if not cave[r + 1, c] in (ROCK, SAND):
@@ -67,11 +70,23 @@ def get_fall_coordinates(cave, r, c):
     return (r, c)
 
 
-fall_coord = get_fall_coordinates(cave, 0, 500)
+p1 = 0
+p2 = 0
 
+fall_coord = get_fall_coordinates(cave_p1, 0, 500)
 while fall_coord != (0, 500):
-    cave[fall_coord] = SAND
-    fall_coord = get_fall_coordinates(cave, 0, 500)
+    cave_p1[fall_coord] = SAND
+    fall_coord = get_fall_coordinates(cave_p1, 0, 500)
 
+p1 = np.count_nonzero(cave_p1 == SAND)
 
-print(np.count_nonzero(cave == SAND))
+fall_coord = get_fall_coordinates(cave_p2, 0, 500)
+while fall_coord != (0, 500):
+    cave_p2[fall_coord] = SAND
+    fall_coord = get_fall_coordinates(cave_p2, 0, 500, abyss=False)
+cave_p2[fall_coord] = SAND
+
+p2 = np.count_nonzero(cave_p2 == SAND)
+
+print(p1)
+print(p2)
