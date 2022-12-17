@@ -1,49 +1,33 @@
-from dataclasses import dataclass
-
-from parse import parse
-
-
-@dataclass
-class Sensor:
-    x: int
-    y: int
-    man_distance: int
+from parse import parse, search
+from shapely import LineString, MultiPolygon, Polygon, box, unary_union
 
 
-def count_invalid_in_row(y_row, sensors):
-    sensor_ranges = []
-    for sensor in sensors:
-        diff_y = sensor.man_distance - abs(y_row - sensor.y)
+def count_invalid_in_row(y_row, sensors, beacons):
+    sensors_shape = unary_union(sensors)
 
-        if diff_y >= 0:
-            dc_min = sensor.x - diff_y
-            dc_max = sensor.x + diff_y
-            sensor_ranges.append((dc_min, dc_max))
+    line = LineString(
+        [(sensors_shape.bounds[0], y_row), (sensors_shape.bounds[2], y_row)]
+    )
 
-    sensor_ranges.sort()
+    count_beacons = len([b for b in beacons if b[1] == y_row])
 
-    min_x = 0
-    max_x = -float("infinity")
+    return line.intersection(sensors_shape).length + 1 - count_beacons
 
-    total = 0
 
-    for sensor_range in sensor_ranges:
-        if not (sensor_range[0] >= min_x and sensor_range[1] <= max_x):
-            if max_x != -float("infinity"):
-                total -= len(
-                    range(max(sensor_range[0], min_x), min(max_x, sensor_range[1]) + 1)
-                )
+def find_distress_beacon(sensors, box_bounds):
+    sensors_shape = unary_union(sensors)
+    search_zone = box(*box_bounds)
 
-            min_x, max_x = sensor_range
-            total += max_x - min_x + 1
+    good_zones = search_zone.difference(search_zone.intersection(sensors_shape))
 
-        print(sensor_range, total)
-
-    print(sensor_ranges)
-    print(total)
+    if isinstance(good_zones, MultiPolygon):
+        return good_zones.geoms[0].centroid
+    else:
+        return good_zones.centroid
 
 
 sensors = []
+beacons = set()
 with open("input.txt") as f:
     for l in f.read().splitlines():
         x_sensor, y_sensor, x_beacon, y_beacon = parse(
@@ -52,7 +36,24 @@ with open("input.txt") as f:
 
         distance = abs(x_sensor - x_beacon) + abs(y_sensor - y_beacon)
 
-        sensors.append(Sensor(x=x_sensor, y=y_sensor, man_distance=distance))
+        beacons.add((x_beacon, y_beacon))
 
-# print(sensors)
-count_invalid_in_row(11, sensors)
+        sensors.append(
+            Polygon(
+                [
+                    (x_sensor - distance, y_sensor),
+                    (x_sensor, y_sensor - distance),
+                    (x_sensor + distance, y_sensor),
+                    (x_sensor, y_sensor + distance),
+                ]
+            )
+        )
+
+
+p1 = count_invalid_in_row(10, sensors, beacons)
+print(p1)
+
+distress_beacon_coord = find_distress_beacon(sensors, (0, 0, 4000000, 4000000))
+
+p2 = distress_beacon_coord.x * 4000000 + distress_beacon_coord.y
+print(p2)
